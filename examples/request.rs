@@ -7,11 +7,13 @@ use chrono::TimeZone;
 
 fn local_time(timestamp: ntp::protocol::TimestampFormat) -> chrono::DateTime<chrono::Local> {
     let unix_time = ntp::unix_time::Instant::from(timestamp);
-    chrono::Local.timestamp(unix_time.secs(), unix_time.subsec_nanos() as _)
+    chrono::Local
+        .timestamp_opt(unix_time.secs(), unix_time.subsec_nanos() as _)
+        .unwrap()
 }
 
 fn main() {
-    let address = "0.pool.ntp.org:123";
+    let address = "cn.ntp.org.cn:123";
     let response: ntp::protocol::Packet = ntp::request(address).unwrap();
     println!("Timestamps in local time:");
     println!("  reference: {}", local_time(response.reference_timestamp));

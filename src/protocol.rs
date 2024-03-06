@@ -51,13 +51,13 @@ pub trait ReadBytes {
 /// Network Time Protocol types that may be written to network endian bytes.
 pub trait WriteToBytes {
     /// Write the command to bytes.
-    fn write_to_bytes<W: WriteBytesExt>(&self, W) -> io::Result<()>;
+    fn write_to_bytes<W: WriteBytesExt>(&self, _: W) -> io::Result<()>;
 }
 
 /// Network Time Protocol types that may be read from network endian bytes.
 pub trait ReadFromBytes: Sized {
     /// Read the command from bytes.
-    fn read_from_bytes<R: ReadBytesExt>(R) -> io::Result<Self>;
+    fn read_from_bytes<R: ReadBytesExt>(_: R) -> io::Result<Self>;
 }
 
 /// Types that have a constant size when written to or read from bytes.
@@ -242,11 +242,11 @@ pub enum ReferenceIdentifier {
 // Convert an ascii string to a big-endian u32.
 macro_rules! code_to_u32 {
     ($w:expr) => {
-        (($w[3] as u32) << 0) |
-        (($w[2] as u32) << 8) |
-        (($w[1] as u32) << 16) |
-        (($w[0] as u32) << 24) |
-        ((*$w as [u8; 4])[0] as u32 * 0)
+        (($w[3] as u32) << 0)
+            | (($w[2] as u32) << 8)
+            | (($w[1] as u32) << 16)
+            | (($w[0] as u32) << 24)
+            | ((*$w as [u8; 4])[0] as u32 * 0)
     };
 }
 
@@ -307,7 +307,7 @@ custom_derive! {
     /// for an intelligent client, either NTPv4 or SNTPv4. Kiss codes are encoded in four-character
     /// ASCII strings that are left justified and zero filled. The strings are designed for
     /// character displays and log files.
-    /// 
+    ///
     /// Recipients of kiss codes MUST inspect them and, in the following cases, take the actions
     /// described.
     #[repr(u32)]
@@ -513,8 +513,7 @@ impl ConstPackedSizeBytes for PacketByte1 {
 }
 
 impl ConstPackedSizeBytes for Packet {
-    const PACKED_SIZE_BYTES: usize =
-        PacketByte1::PACKED_SIZE_BYTES
+    const PACKED_SIZE_BYTES: usize = PacketByte1::PACKED_SIZE_BYTES
         + Stratum::PACKED_SIZE_BYTES
         + 2
         + ShortFormat::PACKED_SIZE_BYTES * 2
@@ -655,7 +654,11 @@ impl ReadFromBytes for DateFormat {
         let era_number = reader.read_i32::<BE>()?;
         let era_offset = reader.read_u32::<BE>()?;
         let fraction = reader.read_u64::<BE>()?;
-        let date_format = DateFormat { era_number, era_offset, fraction };
+        let date_format = DateFormat {
+            era_number,
+            era_offset,
+            fraction,
+        };
         Ok(date_format)
     }
 }
@@ -678,7 +681,7 @@ impl ReadFromBytes for (LeapIndicator, Version, Mode) {
             None => {
                 let err_msg = "unknown leap indicator";
                 return Err(io::Error::new(io::ErrorKind::InvalidData, err_msg));
-            },
+            }
         };
         let vn = Version(vn_u8);
         let mode = match Mode::try_from(mode_u8).ok() {
@@ -686,7 +689,7 @@ impl ReadFromBytes for (LeapIndicator, Version, Mode) {
             None => {
                 let err_msg = "unknown association mode";
                 return Err(io::Error::new(io::ErrorKind::InvalidData, err_msg));
-            },
+            }
         };
         Ok((li, vn, mode))
     }

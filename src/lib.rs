@@ -23,13 +23,12 @@ fn main() {
 
 #[macro_use]
 extern crate custom_derive;
-#[macro_use]
 extern crate conv;
 #[macro_use]
 extern crate log;
 extern crate byteorder;
 
-use protocol::{ReadBytes, ConstPackedSizeBytes, WriteBytes};
+use protocol::{ConstPackedSizeBytes, ReadBytes, WriteBytes};
 use std::io;
 use std::net::{ToSocketAddrs, UdpSocket};
 use std::time::Duration;
